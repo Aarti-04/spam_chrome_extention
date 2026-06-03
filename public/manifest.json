@@ -21,7 +21,7 @@
     "storage"
   ],
   "oauth2": {
-    "client_id": "896915641876-0fduv83ohtqsrpbook5g8v7bo4d9bt6p.apps.googleusercontent.com",
+    "client_id": "__GOOGLE_CLIENT_ID__",
     "scopes": [
       "profile email",
       "https://mail.google.com/"

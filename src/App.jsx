@@ -11,21 +11,26 @@ function App() {
   const [isSandbox, setIsSandbox] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
     // 1. Check local storage for persistent login status
-    chrome.storage.local.get(['isAuthenticated', 'isSandbox'], (result) => {
+    chrome.storage.local.get(['isAuthenticated', 'isSandbox', 'authToken'], (result) => {
       if (result && result.isAuthenticated) {
         setIsAuthenticated(true);
         if (result.isSandbox) {
           setIsSandbox(true);
+        }
+        if (result.authToken) {
+          setToken(result.authToken);
         }
       } else {
         // 2. Fallback to silent identity token check if storage is empty
         chrome.runtime.sendMessage({ message: 'get_auth_token', interactive: false }, (response) => {
           if (response && response.token) {
             setIsAuthenticated(true);
-            chrome.storage.local.set({ isAuthenticated: true, isSandbox: false });
+            setToken(response.token);
+            chrome.storage.local.set({ isAuthenticated: true, isSandbox: false, authToken: response.token });
           } else {
             setIsAuthenticated(false);
           }
@@ -41,7 +46,8 @@ function App() {
       if (response && response.token) {
         setIsAuthenticated(true);
         setIsSandbox(false);
-        chrome.storage.local.set({ isAuthenticated: true, isSandbox: false });
+        setToken(response.token);
+        chrome.storage.local.set({ isAuthenticated: true, isSandbox: false, authToken: response.token });
       } else {
         const errorDetail = response?.error?.message || response?.error || 'Authentication rejected';
         setErrorMsg(errorDetail);
@@ -64,7 +70,8 @@ function App() {
   };
 
   const handleLogout = () => {
-    chrome.storage.local.set({ isAuthenticated: false, isSandbox: false });
+    chrome.storage.local.set({ isAuthenticated: false, isSandbox: false, authToken: null });
+    setToken(null);
     if (isSandbox) {
       setIsAuthenticated(false);
       setIsSandbox(false);
@@ -146,7 +153,7 @@ function App() {
     }
 
     setStatusMessage('Connecting to Gmail...');
-    chrome.runtime.sendMessage({ message: 'get_emails' }, (response) => {
+    chrome.runtime.sendMessage({ message: 'get_emails', token: token }, (response) => {
       if (response && response.messages) {
         const total = response.messages.length;
         setEmails(response.messages);
@@ -184,7 +191,8 @@ function App() {
               // Automatically move to trash
               chrome.runtime.sendMessage({
                 message: 'delete_email',
-                email: email
+                email: email,
+                token: token
               }, (deleteResponse) => {
                 if (deleteResponse && deleteResponse.success) {
                   console.log(`Successfully trashed spam email: ${email.id}`);
@@ -218,8 +226,8 @@ function App() {
                             errorDetail.includes('OAuth') ||
                             errorDetail.includes('token');
         if (isAuthError) {
-          chrome.storage.local.set({ isAuthenticated: false, isSandbox: false });
-          chrome.storage.local.remove(['authToken']);
+          chrome.storage.local.set({ isAuthenticated: false, isSandbox: false, authToken: null });
+          setToken(null);
           setIsAuthenticated(false);
         }
       }

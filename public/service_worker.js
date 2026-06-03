@@ -137,8 +137,7 @@ function handle401(token, callback) {
         });
     });
 }
-
-function fetchEmails(token, callback) {
+function fetchEmails(token, sendResponse) {
     const fetch_url = 'https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=50';
     const fetch_options = {
         headers: {
@@ -149,8 +148,13 @@ function fetchEmails(token, callback) {
     fetch(fetch_url, fetch_options)
         .then(response => {
             if (!response.ok) {
-                return response.text().then(errText => {
-                    throw new Error(`HTTP error ${response.status}: ${errText}`);
+                if (response.status === 401) {
+                    chrome.identity.removeCachedAuthToken({ token: token }, () => {
+                        console.log('Expired token removed from cache');
+                    });
+                }
+                return response.json().then(errData => {
+                    throw new Error(errData?.error?.message || `HTTP error ${response.status}`);
                 });
             }
             return response.json();
@@ -160,28 +164,31 @@ function fetchEmails(token, callback) {
                 const messagePromises = data.messages.map(async message => {
                     const detailResponse = await fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`, fetch_options);
                     if (!detailResponse.ok) {
-                        throw new Error(`HTTP error ${detailResponse.status} on details`);
+                        if (detailResponse.status === 401) {
+                            chrome.identity.removeCachedAuthToken({ token: token });
+                        }
+                        throw new Error(`Failed to fetch message details for ${message.id}`);
                     }
                     return await detailResponse.json();
                 });
                 Promise.all(messagePromises)
                     .then(messages => {
-                        callback({ messages });
+                        sendResponse({ messages });
                     })
                     .catch(err => {
-                        callback({ error: err.message });
+                        sendResponse({ error: err.message });
                     });
             } else {
-                callback({ messages: [] });
+                sendResponse({ messages: [] });
             }
         })
         .catch(error => {
             console.error('Fetch emails error:', error);
-            callback({ error: error.message || error });
+            sendResponse({ error: error.message || error });
         });
 }
 
-function trashEmail(messageId, token, callback) {
+function trashEmail(messageId, token, sendResponse) {
     const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/trash`;
     fetch(url, {
         method: 'POST',
@@ -192,21 +199,22 @@ function trashEmail(messageId, token, callback) {
     })
     .then(response => {
         if (!response.ok) {
-            return response.text().then(errText => {
-                throw new Error(`HTTP error ${response.status}: ${errText}`);
-            });
+            if (response.status === 401) {
+                chrome.identity.removeCachedAuthToken({ token: token });
+            }
+            throw new Error('Failed to delete email');
         }
         console.log("mail deleted.......");
         saveDeletedEmail(messageId);
-        callback({ success: true });
+        sendResponse({ success: true });
     })
     .catch(error => {
-        callback({ success: false, error: error.message || error });
+        sendResponse({ success: false, error: error.message });
     });
 }
 
 function predictSpam(emailContent, sendResponse) {
-  console.log("predictSpam called..");
+    console.log("predictSpam called..");
     const requestBody = {
         body: emailContent
     };
@@ -230,7 +238,7 @@ function predictSpam(emailContent, sendResponse) {
         const spamKeywords = [
             'winner', 'winning', 'free', 'offer', 'lottery', 'cash', 'prize', 
             'viagra', 'casino', 'bitcoin', 'crypto', 'verify', 'urgent', 
-            'congratulat', 'reward', 'gift card', 'act now'
+            'congratulat', 'reward', 'gift card', 'act now', 'permanent account closure'
         ];
         
         const isSpam = spamKeywords.some(keyword => snippet.includes(keyword));
@@ -238,21 +246,20 @@ function predictSpam(emailContent, sendResponse) {
         sendResponse({ isSpam: isSpam, isFallback: true });
     });
 }
-function saveDeletedEmail(emailId) {
-  fetch(ManageHistoryURL, {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email_id: emailId })
-  })
-  .then(response => response.json())
-  .then(data => {
-      console.log('Email ID saved:', data);
-  })
-  .catch(error => {
-      console.error('Error saving email ID:', error);
-  });
-}
 
-  
+function saveDeletedEmail(emailId) {
+    fetch(ManageHistoryURL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email_id: emailId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Email ID saved:', data);
+    })
+    .catch(error => {
+        console.error('Error saving email ID:', error);
+    });
+}
