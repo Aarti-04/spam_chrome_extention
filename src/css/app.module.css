@@ -1,0 +1,6 @@
+.continueBtn{
+  background-color: #f16161;
+  display:"flex";
+  align-items: center;
+  justify-content: center;
+}
