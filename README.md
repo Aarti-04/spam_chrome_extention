@@ -2,9 +2,8 @@
 
 MailCleaner AI is a Chrome Extension (Manifest V3) that integrates with the Gmail REST API using OAuth 2.0 to scan, classify, and automatically trash spam and phishing emails. The UI is built with React and Vite, communicating asynchronously with an event-driven background service worker.
 
-<div align="center">
-  <video src="finlal_chrome_extension_demo.mp4" width="100%" height="auto" controls></video>
-</div>
+![MailCleaner AI Demo](MailcleanerAI_demo.mp4)
+
 
 ---
 
