@@ -1,25 +1,30 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
-  "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+  "name": "MailCleaner",
+  "description": "",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApKlOjGkNHXjxGu257bnIN7l7+hC6Smtv/WPaufI6jPyS9NS1SSdQT+PgzA1ZPYE9l5XINg/dOVYqScJsRubd1o5zB0khnTpkOHujlHkOcCHEbggpjJfClenZio7flMbd7fNCbrd4s1NyT3EqDZbhXAVoOzJBLyWwx1+g4RpVt/jZsyfAHR2jPt13GKvOF5p+WQp5gHxqPsDip2WwepxQfdgGbBTgH46ZO578OieV0CrQ7PJ+a53848WmFJhgEPBU9tfyI60hZK1pXpN/uBepx6eaw/7FgbhZctvu/FCJn0lSoAyQ/ufnHfQcuyMYqn146BEJ4BajeDkQb7FpcZzhQwIDAQAB",
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "32": "icon32.png"
     }
+  },
+  "permissions": [
+    "identity",
+    "identity.email",
+    "notifications",
+    "tabs",
+    "storage"
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "oauth2": {
+    "client_id": "896915641876-0fduv83ohtqsrpbook5g8v7bo4d9bt6p.apps.googleusercontent.com",
+    "scopes": [
+      "profile email",
+      "https://mail.google.com/"
+    ]
+  }
 }

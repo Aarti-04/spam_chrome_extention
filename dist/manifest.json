@@ -1,10 +1,30 @@
 {
-  "version": "1.0.0",
+  "name": "MailCleaner",
+  "description": "",
+  "version": "0.1.0",
   "manifest_version": 3,
-  "name": "React Chrome Extension",
-  "description": "This is a Chrome extension built with React and TypeScript",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApKlOjGkNHXjxGu257bnIN7l7+hC6Smtv/WPaufI6jPyS9NS1SSdQT+PgzA1ZPYE9l5XINg/dOVYqScJsRubd1o5zB0khnTpkOHujlHkOcCHEbggpjJfClenZio7flMbd7fNCbrd4s1NyT3EqDZbhXAVoOzJBLyWwx1+g4RpVt/jZsyfAHR2jPt13GKvOF5p+WQp5gHxqPsDip2WwepxQfdgGbBTgH46ZO578OieV0CrQ7PJ+a53848WmFJhgEPBU9tfyI60hZK1pXpN/uBepx6eaw/7FgbhZctvu/FCJn0lSoAyQ/ufnHfQcuyMYqn146BEJ4BajeDkQb7FpcZzhQwIDAQAB",
+  "background": {
+    "service_worker": "service_worker.js"
+  },
   "action": {
-      "default_popup": "js/index.html",
-      "default_title": "React Chrome Extension"
+    "default_popup": "index.html",
+    "default_icon": {
+      "32": "icon32.png"
+    }
+  },
+  "permissions": [
+    "identity",
+    "identity.email",
+    "notifications",
+    "tabs",
+    "storage"
+  ],
+  "oauth2": {
+    "client_id": "896915641876-0fduv83ohtqsrpbook5g8v7bo4d9bt6p.apps.googleusercontent.com",
+    "scopes": [
+      "profile email",
+      "https://mail.google.com/"
+    ]
   }
 }
